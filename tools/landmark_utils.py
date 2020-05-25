@@ -28,8 +28,8 @@ def show_landmark(face, landmark):
 #alpha:angle
 def rotate(img, bbox, landmark, alpha):
     """
-        given a face with bbox and landmark, rotate with alpha
-        and return rotated face with bbox, landmark (absolute position)
+        given an object image with bbox and landmark, rotate with alpha
+        and return rotated object with bbox, landmark (absolute position)
     """
     center = ((bbox.left+bbox.right)/2, (bbox.top+bbox.bottom)/2)
     rot_mat = cv2.getRotationMatrix2D(center, alpha, 1)
@@ -38,21 +38,25 @@ def rotate(img, bbox, landmark, alpha):
     img_rotated_by_alpha = cv2.warpAffine(img, rot_mat,(img.shape[1],img.shape[0]))
     landmark_ = np.asarray([(rot_mat[0][0]*x+rot_mat[0][1]*y+rot_mat[0][2],
                  rot_mat[1][0]*x+rot_mat[1][1]*y+rot_mat[1][2]) for (x, y) in landmark])
-    #crop face 
-    face = img_rotated_by_alpha[bbox.top:bbox.bottom+1,bbox.left:bbox.right+1]
-    return (face, landmark_)
+    #crop object
+    obj = img_rotated_by_alpha[bbox.top:bbox.bottom+1,bbox.left:bbox.right+1]
+    return (obj, landmark_)
 
 
-def flip(face, landmark):
+def flip(obj, lmnum, landmark):
     """
-        flip face
+        flip object
     """
-    face_flipped_by_x = cv2.flip(face, 1)
+    object_flipped_by_x = cv2.flip(obj, 1)
     #mirror
     landmark_ = np.asarray([(1-x, y) for (x, y) in landmark])
-    landmark_[[0, 1]] = landmark_[[1, 0]]#left eye<->right eye
-    landmark_[[3, 4]] = landmark_[[4, 3]]#left mouth<->right mouth
-    return (face_flipped_by_x, landmark_)
+    if lmnum == 5: # face
+        landmark_[[0, 1]] = landmark_[[1, 0]]#left eye<->right eye
+        landmark_[[3, 4]] = landmark_[[4, 3]]#left mouth<->right mouth
+    elif lmnum == 4: # plate
+        landmark_[[0, 1]] = landmark_[[1, 0]]#right down<->left down
+        landmark_[[2, 3]] = landmark_[[3, 2]]#left upper<->right upper
+    return (object_flipped_by_x, landmark_)
 
 def randomShift(landmarkGt, shift):
     """

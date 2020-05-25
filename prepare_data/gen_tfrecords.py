@@ -5,7 +5,7 @@ sys.path.insert(0, rootPath)
 import numpy as np
 import argparse
 
-from tools.tfrecord_utils import _process_image_withoutcoder, _convert_to_example_simple
+from tools.tfrecord_utils import _process_image_withoutcoder, _convert_to_example_simple, _convert_to_example_plate
 import tensorflow as tf
 
 def __iter_all_data(net, iterType):
@@ -87,15 +87,58 @@ def __get_dataset(net, iterType):
         dataset.append(data_example)
     return dataset
 
-def __add_to_tfrecord(filename, image_example, tfrecord_writer):
+def __get_plate_dataset(net, iterType):
+    dataset = []
+    for line in __iter_all_data(net, iterType):
+        info = line.strip().split(' ')
+        data_example = dict()
+        bbox = dict()
+        data_example['filename'] = info[0]
+        data_example['label'] = int(info[1])
+        bbox['xmin'] = 0
+        bbox['ymin'] = 0
+        bbox['xmax'] = 0
+        bbox['ymax'] = 0
+        bbox['xleftup'] = 0
+        bbox['yleftup'] = 0
+        bbox['xrightup'] = 0
+        bbox['yrightup'] = 0
+        bbox['xleftdown'] = 0
+        bbox['yleftdown'] = 0
+        bbox['xrightdown'] = 0
+        bbox['yrightdown'] = 0      
+        if len(info) == 6:
+            bbox['xmin'] = float(info[2])
+            bbox['ymin'] = float(info[3])
+            bbox['xmax'] = float(info[4])
+            bbox['ymax'] = float(info[5])
+        if len(info) == 10:
+            bbox['xrightdown'] = float(info[2])
+            bbox['yrightdown'] = float(info[3])
+            bbox['xleftdown'] = float(info[4])
+            bbox['yleftdown'] = float(info[5])
+            bbox['xleftup'] = float(info[6])
+            bbox['yleftup'] = float(info[7])
+            bbox['xrightup'] = float(info[8])
+            bbox['yrightup'] = float(info[9])
+
+
+        data_example['bbox'] = bbox
+        dataset.append(data_example)
+    return dataset
+
+def __add_to_tfrecord(filename, image_example, tfrecord_writer, lmnum):
     """
     Loads data from image and annotations files and add them to a TFRecord.
     """
     image_data, height, width = _process_image_withoutcoder(filename)
-    example = _convert_to_example_simple(image_example, image_data)
+    if lmnum == 5:
+        example = _convert_to_example_simple(image_example, image_data)
+    elif lmnum == 4:
+        example = _convert_to_example_plate(image_example, image_data)
     tfrecord_writer.write(example.SerializeToString())
 
-def gen_tfrecords(net, shuffling=False):
+def gen_tfrecords(net, lmnum, shuffling=False):
     """
     Runs the conversion operation.
     """
@@ -103,10 +146,15 @@ def gen_tfrecords(net, shuffling=False):
     def _gen(tfFileName, net, iterType, shuffling):
         if tf.gfile.Exists(tfFileName):
             tf.gfile.Remove(tfFileName)
+
         # GET Dataset, and shuffling.
-        dataset = __get_dataset(net=net, iterType=iterType)
+        if lmnum == 5:
+            dataset = __get_dataset(net=net, iterType=iterType)
+        elif lmnum == 4:
+            dataset = __get_plate_dataset(net=net, iterType=iterType)
         if shuffling:
             np.random.shuffle(dataset)
+        
         # Process dataset files.
         # write the data to tfrecord
         with tf.python_io.TFRecordWriter(tfFileName) as tfrecord_writer:
@@ -115,9 +163,10 @@ def gen_tfrecords(net, shuffling=False):
                     sys.stdout.write('\rConverting[%s]: %d/%d' % (net, i + 1, len(dataset)))
                     sys.stdout.flush()
                 filename = image_example['filename']
-                __add_to_tfrecord(filename, image_example, tfrecord_writer)
+                __add_to_tfrecord(filename, image_example, tfrecord_writer, lmnum)
         tfrecord_writer.close()
         print('\n')
+
     saveFolder = os.path.join(rootPath, "tmp/data/%s/"%(net))
     #tfrecord name 
     if net == 'pnet':
@@ -138,6 +187,8 @@ def parse_args():
                         default='unknow', type=str)
     parser.add_argument('--gpus', dest='gpus', help='specify gpu to run. eg: --gpus=0,1',
                         default='0', type=str)
+    parser.add_argument('--lmnum',dest='lmnum',help='number of landmarks in one bounding box',
+                        default=5, type=int)
     args = parser.parse_args()
     return args
 
@@ -149,5 +200,5 @@ if __name__ == "__main__":
     # set GPU
     if args.gpus:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
-    gen_tfrecords(stage, True)
+    gen_tfrecords(stage, args.lmnum, True)
 

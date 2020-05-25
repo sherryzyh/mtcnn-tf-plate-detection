@@ -9,11 +9,16 @@ Implement training and testing by tensorflow.
 * Ubuntu 14.04 or CentOS 7.2 or higher
 * Cuda 8.0 or higher
 
-## Prepare Data and Go Through Training Process
+## Prepare Face Data and Go Through Training Process
 1. WIDER face dataset: Download WIDER_train.zip from [here](http://mmlab.ie.cuhk.edu.hk/projects/WIDERFace/). You can only download Wider Face Training Images. Unzip it and move it to `dataset` folder.
 2. Landmark dataset: Download **train.zip** from [here](http://mmlab.ie.cuhk.edu.hk/archive/CNN_FacePoint.htm). You can only download [training set](http://mmlab.ie.cuhk.edu.hk/archive/CNN/data/train.zip). Unzip it and move it to `dataset` folder.
 3. Run `./clearAll.sh` to clear all tmp file.
-4. Run `./runAll.sh` to finish all(Include prepare data and training). Please check this shell script to get more info.
+4. Run `./runAll.sh` to finish all (include preparing data and training). Please check this shell script to get more info.
+
+## Prepare Plate Data and Train
+
+1. Prepare your own plate dataset, make sure images named by CCPD rules. Put image files in `./dataset/traindata` folder.
+2. Run `./runMy.sh` to finish all (include preparing data and training).
 
 ## Testing and Predict
 1. Copy your image file to `testing/images`

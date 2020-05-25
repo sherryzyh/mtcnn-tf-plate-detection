@@ -54,7 +54,7 @@ def convert_to_square(bbox):
     square_bbox[:, 3] = square_bbox[:, 1] + max_side - 1
     return square_bbox
 
-def getBboxLandmarkFromTxt(txt, with_landmark=True):
+def getBboxLandmarkFromTxt(txt, lmnum, with_landmark=True):
     """
         Generate data from txt file
         return [(img_path, bbox, landmark)]
@@ -66,18 +66,25 @@ def getBboxLandmarkFromTxt(txt, with_landmark=True):
         line = line.strip()
         components = line.split(' ')
         img_path = os.path.join(dirname, components[0]) # file path
-        # bounding box, (x1, y1, x2, y2)
-        bbox = (components[1], components[3], components[2], components[4])        
+
+        if lmnum == 5: # face
+            # bounding box, (x1, y1, x2, y2) reading from (x1, x2, y1, y2)
+            bbox = (components[1], components[3], components[2], components[4])
+        elif lmnum == 4: # plate
+            # bounding box, (x1, y1, x2, y2) reading from (x1, y1, x2, y2)
+            bbox = (components[1], components[2], components[3], components[4])        
         bbox = [float(_) for _ in bbox]
         bbox = list(map(int, bbox))
+
         # landmark
         if not with_landmark:
             yield (img_path, BBox(bbox))
             continue
-        landmark = np.zeros((5, 2))
-        for index in range(0, 5):
+        landmark = np.zeros((lmnum, 2))
+        for index in range(0, lmnum):
             rv = (float(components[5+2*index]), float(components[5+2*index+1]))
             landmark[index] = rv
+
         #normalize
         '''
         for index, one in enumerate(landmark):

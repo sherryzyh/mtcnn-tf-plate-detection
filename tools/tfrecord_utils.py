@@ -91,6 +91,34 @@ def _convert_to_example_simple(image_example, image_buffer):
     }))
     return example
 
+def _convert_to_example_plate(image_example, image_buffer):
+    """
+    covert to tfrecord file
+    :param image_example: dict, an image example
+    :param image_buffer: string, JPEG encoding of RGB image
+    :param colorspace:
+    :param channels:
+    :param image_format:
+    :return:
+    Example proto
+    """
+    # filename = str(image_example['filename'])
+
+    # class label for the whole image
+    class_label = image_example['label']
+    bbox = image_example['bbox']
+    roi = [bbox['xmin'],bbox['ymin'],bbox['xmax'],bbox['ymax']]
+    landmark = [bbox['xrightdown'],bbox['yrightdown'],bbox['xleftdown'],bbox['yleftdown'],bbox['xleftup'],bbox['yleftup'],
+                bbox['xrightup'],bbox['yrightup']]
+                
+      
+    example = tf.train.Example(features=tf.train.Features(feature={
+        'image/encoded': _bytes_feature(image_buffer),
+        'image/label': _int64_feature(class_label),
+        'image/roi': _float_feature(roi),
+        'image/landmark': _float_feature(landmark)
+    }))
+    return example
 
 
 class ImageCoder(object):
