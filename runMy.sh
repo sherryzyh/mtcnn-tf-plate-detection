@@ -18,16 +18,16 @@ fi
 # 2. stage: P-Net
 ### generate training data(Face Detection Part) for PNet
 echo "Preparing P-Net training data: bbox"
-python prepare_data/gen_hard_bbox_pnet.py --mydata=True --lmNum=4
+python prepare_data/gen_hard_bbox_pnet.py --mydata=True --lmnum=4
 ### generate training data(Face Landmark Detection Part) for PNet
 echo "Preparing P-Net training data: landmark"
-python prepare_data/gen_landmark_aug.py --stage=pnet
+python prepare_data/gen_landmark_aug.py --stage=pnet --mydata=True --lmnum=4
 ### generate tfrecord file for tf training
 echo "Preparing P-Net tfrecord file"
-python prepare_data/gen_tfrecords.py --stage=pnet
+python prepare_data/gen_tfrecords.py --stage=pnet --lmnum=4
 ### start to training P-Net
 echo "Start to training P-Net"
-python -u training/train.py --stage=pnet
+python -u training/train_plate.py --stage=pnet
 
 # 3. stage: R-Net
 ### generate training data(Face Detection Part) for RNet
