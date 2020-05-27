@@ -66,7 +66,7 @@ def squared_im(img, size):
     left = (size - resized_w)//2
     right = size - left - resized_w
     print("w", resized_w, "h",resized_h,"top %d bottom %d left %d right %d" %(top, bottom, left, right))
-    resized_im = cv2.copyMakeBorder(resized_im,top,bottom,left,right,cv2.BORDER_CONSTANT,value=0)
+    resized_im = cv2.copyMakeBorder(resized_im,top,bottom,left,right,cv2.BORDER_CONSTANT,value=255)
     return resized_im
 
 def enlarge_det(bbox):
