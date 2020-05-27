@@ -131,6 +131,8 @@ dmypy.json
 # tmp data
 tmp/
 tmp_36x12/
+tmp_12x12_ccpd_base_black/
+tmp_12x12_ccpd_paste/
 
 # dataset
 dataset/
