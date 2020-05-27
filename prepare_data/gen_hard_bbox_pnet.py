@@ -5,7 +5,7 @@ import cv2
 import os
 rootPath = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 sys.path.insert(0, rootPath)
-from tools.common_utils import IoU
+from tools.common_utils import IoU, squared_im
 import argparse
 
 def gen_hard_bbox_pnet(srcDataSet, srcAnnotations):
@@ -189,7 +189,8 @@ def gen_hard_bbox_pnet_plate(srcDataSet, srcAnnotations):
                 continue
             # crop sample image
             cropped_im = img[ny : ny + size, nx : nx + size, :]
-            resized_im = cv2.resize(cropped_im, (36, 12), interpolation=cv2.INTER_LINEAR)
+            resized_im = squared_im(cropped_im, 12)
+            #resized_im = cv2.resize(cropped_im, (36, 12), interpolation=cv2.INTER_LINEAR)
             # now to save it
             save_file = os.path.join(saveFolder, "neg", "%s.jpg"%nIdx)
             saveFiles['neg'].write(save_file + ' 0\n')
@@ -221,7 +222,8 @@ def gen_hard_bbox_pnet_plate(srcDataSet, srcAnnotations):
                 if np.max(iou) >= 0.3:
                     continue
                 cropped_im = img[ny1: ny1 + size, nx1: nx1 + size, :]
-                resized_im = cv2.resize(cropped_im, (36, 12), interpolation=cv2.INTER_LINEAR)
+                resized_im = squared_im(cropped_im, 12)
+                #resized_im = cv2.resize(cropped_im, (36, 12), interpolation=cv2.INTER_LINEAR)
                 save_file = os.path.join(saveFolder, "neg", "%s.jpg"%nIdx)
                 saveFiles['neg'].write(save_file + ' 0\n')
                 cv2.imwrite(save_file, resized_im)
@@ -250,11 +252,12 @@ def gen_hard_bbox_pnet_plate(srcDataSet, srcAnnotations):
                 offset_x1 = (x1 - nx1) / float(size_w)
                 offset_y1 = (y1 - ny1) / float(size_h)
                 offset_x2 = (x2 - nx2) / float(size_w)
-                offset_y2 = (y2 - ny2) / float(size_h   )
+                offset_y2 = (y2 - ny2) / float(size_h)
                 #crop
                 cropped_im = img[int(ny1) : int(ny2), int(nx1) : int(nx2), :]
                 #resize
-                resized_im = cv2.resize(cropped_im, (36, 12), interpolation=cv2.INTER_LINEAR)
+                resized_im = squared_im(cropped_im, 12)
+                #resized_im = cv2.resize(cropped_im, (36, 12), interpolation=cv2.INTER_LINEAR)
 
                 box_ = box.reshape(1, -1)
                 #print("crop box:", nx1,ny1,nx2,ny2)

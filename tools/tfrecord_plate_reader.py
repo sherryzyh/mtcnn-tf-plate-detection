@@ -23,21 +23,15 @@ def read_single_tfrecord(tfrecord_file, batch_size, net):
     )
     if net == 'pnet':
         image_size = 12
-        image_size_w = 36 
-        image_size_h = 12
     elif net == 'rnet':
         image_size = 24
-        image_size_w = 72
-        image_size_h = 24
     elif net == 'onet':
         image_size = 48
-        image_size_w = 144 
-        image_size_h = 48
     else:
         raise Exception("Unsupport your net type!")
     image = tf.decode_raw(image_features['image/encoded'], tf.uint8)
     print("read from tfrecord, shape=",tf.shape(image))
-    image = tf.reshape(image, [image_size_h, image_size_w, 3])
+    image = tf.reshape(image, [image_size, image_size, 3])
     image = (tf.cast(image, tf.float32)-127.5) / 128
 
     label = tf.cast(image_features['image/label'], tf.float32)

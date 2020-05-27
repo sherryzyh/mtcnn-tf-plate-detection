@@ -9,7 +9,7 @@ sys.path.insert(0, rootPath)
 from nms import py_nms
 from training.mtcnn_config import config
 
-class MtcnnDetector(object):
+class MtcnnDetector_plate(object):
     def __init__(self,
                  detectors,
                  min_size=24,
@@ -174,7 +174,8 @@ class MtcnnDetector(object):
             boxes after calibration
         """
         h, w, c = im.shape
-        net_size = 12
+        print("image: height %d width %d channels %d\n" %(h,w,c))
+        net_size = 36
         
         current_scale = float(net_size) / self.min_size  # find initial scale
         im_resized = self.processed_image(im, current_scale)
@@ -313,13 +314,13 @@ class MtcnnDetector(object):
         landmark = landmark[keep]
         return boxes, boxes_c,landmark
 
-    def detect_face(self, test_data):
+    def detect_plate(self, test_data):
         all_boxes = []  #save each image's bboxes
         landmarks = []
         batch_idx = 0
         for databatch in test_data:
             # print info
-            printStr = "\rDone images: {}".format(batch_idx)
+            printStr = "\rDone images: {}\n".format(batch_idx)
             sys.stdout.write(printStr)
             sys.stdout.flush()
             batch_idx += 1
@@ -350,3 +351,5 @@ class MtcnnDetector(object):
             all_boxes.append(boxes_c)
             landmarks.append(landmark)
         return all_boxes,landmarks
+
+

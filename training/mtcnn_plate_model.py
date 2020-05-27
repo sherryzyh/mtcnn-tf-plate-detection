@@ -125,14 +125,14 @@ def P_Net(inputs, label=None, bbox_target=None, landmark_target=None, training=T
         net = slim.conv2d(net, num_outputs=16, kernel_size=[3,3], stride=1, scope='conv2')
         net = slim.conv2d(net, num_outputs=32, kernel_size=[3,3], stride=1, scope='conv3')
         #batch*H*W*2
-        conv4_1 = slim.conv2d(net, num_outputs=2, kernel_size=[1, 13], stride=1, scope='conv4_1', activation_fn=tf.nn.softmax)
-        #conv4_1 = slim.conv2d(net, num_outputs=2, kernel_size=[1,1], stride=1, scope='conv4_1', activation_fn=tf.nn.softmax)
+        #conv4_1 = slim.conv2d(net, num_outputs=2, kernel_size=[1, 13], stride=1, scope='conv4_1', activation_fn=tf.nn.softmax)
+        conv4_1 = slim.conv2d(net, num_outputs=2, kernel_size=[1,1], stride=1, scope='conv4_1', activation_fn=tf.nn.softmax)
         #batch*H*W*4
-        bbox_pred = slim.conv2d(net, num_outputs=4, kernel_size=[1, 13], stride=1, scope='conv4_2', activation_fn=None)
-        #bbox_pred = slim.conv2d(net, num_outputs=4, kernel_size=[1,1], stride=1, scope='conv4_2', activation_fn=None)
+        #bbox_pred = slim.conv2d(net, num_outputs=4, kernel_size=[1, 13], stride=1, scope='conv4_2', activation_fn=None)
+        bbox_pred = slim.conv2d(net, num_outputs=4, kernel_size=[1,1], stride=1, scope='conv4_2', activation_fn=None)
         #batch*H*W*10
-        landmark_pred = slim.conv2d(net, num_outputs=8, kernel_size=[1, 13], stride=1, scope='conv4_3', activation_fn=None)
-        #landmark_pred = slim.conv2d(net, num_outputs=8, kernel_size=[1,1], stride=1, scope='conv4_3', activation_fn=None)
+        #landmark_pred = slim.conv2d(net, num_outputs=8, kernel_size=[1, 13], stride=1, scope='conv4_3', activation_fn=None)
+        landmark_pred = slim.conv2d(net, num_outputs=8, kernel_size=[1,1], stride=1, scope='conv4_3', activation_fn=None)
         if training:
             #batch*2
             cls_prob = tf.squeeze(conv4_1, [1,2], name='cls_prob')

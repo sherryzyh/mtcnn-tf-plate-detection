@@ -17,6 +17,7 @@ class FcnDetector(object):
             self.width_op = tf.placeholder(tf.int32, name='image_width')
             self.height_op = tf.placeholder(tf.int32, name='image_height')
             image_reshape = tf.reshape(self.image_op, [1, self.height_op, self.width_op, 3])
+            print("In FcnDetector, ", self.height_op, self.width_op)
             #self.cls_prob batch*2
             #self.bbox_pred batch*4
             #construct model here
@@ -36,7 +37,7 @@ class FcnDetector(object):
             saver.restore(self.sess, model_path)
     def predict(self, databatch):
         height, width, _ = databatch.shape
-        # print(height, width)
+        print("height",height,"width",width)
         cls_prob, bbox_pred = self.sess.run([self.cls_prob, self.bbox_pred],
                                                            feed_dict={self.image_op: databatch, self.width_op: width,
                                                                       self.height_op: height})

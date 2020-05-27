@@ -9,7 +9,7 @@ import sys
 import argparse
 rootPath = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 sys.path.insert(0, rootPath)
-from tools.common_utils import getBboxLandmarkFromTxt, IoU, BBox
+from tools.common_utils import getBboxLandmarkFromTxt, IoU, BBox, squared_im
 from tools.landmark_utils import rotate,flip
 
 def is_pos_sample(x1, y1, x2, y2, nx1, ny1, nx2, ny2):
@@ -166,7 +166,8 @@ def gen_landmark_data_plate(srcTxt, net, augment=False):
         gt_box = np.array([bbox.left, bbox.top, bbox.right, bbox.bottom])
         f_plate = img[bbox.top: bbox.bottom+1, bbox.left: bbox.right+1]
         #print("ground truth box:",gt_box)
-        f_plate = cv2.resize(f_plate, (sizeOfNet[net] * 3, sizeOfNet[net]))
+        f_plate = squared_im(f_plate, sizeOfNet[net])
+        #f_plate = cv2.resize(f_plate, (sizeOfNet[net], sizeOfNet[net]))
         #print("%dx%d done!" %(sizeOfNet[net]*3, sizeOfNet[net]))
         landmark = np.zeros((4, 2))
         #normalize
@@ -199,7 +200,8 @@ def gen_landmark_data_plate(srcTxt, net, augment=False):
                     continue
                 crop_box = np.array([nx1,ny1,nx2,ny2])
                 cropped_im = img[ny1:ny2+1,nx1:nx2+1,:]
-                resized_im = cv2.resize(cropped_im, (sizeOfNet[net] * 3, sizeOfNet[net]))
+                resized_im = squared_im(cropped_im, sizeOfNet[net])
+                #resized_im = cv2.resize(cropped_im, (sizeOfNet[net] * 3, sizeOfNet[net]))
 
                 #cal iou
                 iou = IoU(crop_box, np.expand_dims(gt_box,0))
@@ -219,7 +221,8 @@ def gen_landmark_data_plate(srcTxt, net, augment=False):
                 #mirror                    
                 if random.choice([0,1]) > 0:
                     plate_flipped, landmark_flipped = flip(resized_im, 4, landmark_)
-                    plate_flipped = cv2.resize(plate_flipped, (sizeOfNet[net] * 3, sizeOfNet[net]))
+                    plate_flipped = squared_im(plate_flipped, sizeOfNet[net])
+                    #plate_flipped = cv2.resize(plate_flipped, (sizeOfNet[net], sizeOfNet[net]))
                     #c*h*w
                     F_imgs.append(plate_flipped)
                     F_landmarks.append(landmark_flipped.reshape(8))
@@ -230,13 +233,14 @@ def gen_landmark_data_plate(srcTxt, net, augment=False):
                                                                      bbox.reprojectLandmark(landmark_), 5)#逆时针旋转
                     #landmark_offset
                     landmark_rotated = bbox.projectLandmark(landmark_rotated)
-                    plate_rotated_by_alpha = cv2.resize(plate_rotated_by_alpha, (sizeOfNet[net] * 3, sizeOfNet[net]))
+                    plate_rotated_by_alpha = cv2.resize(plate_rotated_by_alpha, (sizeOfNet[net], sizeOfNet[net]))
                     F_imgs.append(plate_rotated_by_alpha)
                     F_landmarks.append(landmark_rotated.reshape(8))
                 
                     #flip
                     plate_flipped, landmark_flipped = flip(plate_rotated_by_alpha, 4, landmark_rotated)
-                    plate_flipped = cv2.resize(plate_flipped, (sizeOfNet[net] * 3, sizeOfNet[net]))
+                    plate_flipped = squared_im(plate_flipped, sizeOfNet[net])
+                    #plate_flipped = cv2.resize(plate_flipped, (sizeOfNet[net], sizeOfNet[net]))
                     F_imgs.append(plate_flipped)
                     F_landmarks.append(landmark_flipped.reshape(8))                
                 
@@ -245,12 +249,14 @@ def gen_landmark_data_plate(srcTxt, net, augment=False):
                     plate_rotated_by_alpha, landmark_rotated = rotate(img, bbox, \
                                                                      bbox.reprojectLandmark(landmark_), -5)#顺时针旋转
                     landmark_rotated = bbox.projectLandmark(landmark_rotated)
-                    plate_rotated_by_alpha = cv2.resize(plate_rotated_by_alpha, (sizeOfNet[net] * 3, sizeOfNet[net]))
+                    plate_rotated_by_alpha = squared_im(plate_rotated_by_alpha, sizeOfNet[net])
+                    #plate_rotated_by_alpha = cv2.resize(plate_rotated_by_alpha, (sizeOfNet[net], sizeOfNet[net]))
                     F_imgs.append(plate_rotated_by_alpha)
                     F_landmarks.append(landmark_rotated.reshape(8))
                 
                     plate_flipped, landmark_flipped = flip(plate_rotated_by_alpha, 4, landmark_rotated)
-                    plate_flipped = cv2.resize(plate_flipped, (sizeOfNet[net] * 3, sizeOfNet[net]))
+                    plate_flipped = squared_im(plate_flipped, sizeOfNet[net])
+                    #plate_flipped = cv2.resize(plate_flipped, (sizeOfNet[net], sizeOfNet[net]))
                     F_imgs.append(plate_flipped)
                     F_landmarks.append(landmark_flipped.reshape(8)) 
         F_imgs, F_landmarks = np.asarray(F_imgs), np.asarray(F_landmarks)

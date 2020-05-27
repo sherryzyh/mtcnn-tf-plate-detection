@@ -88,21 +88,18 @@ def train(netFactory, modelPrefix, endEpoch, dataPath, display=200, baseLr=0.01,
             total_num += sum(1 for _ in tf.python_io.tf_record_iterator(d))
     #ratio 
     if net == 'pnet':
-        image_size_w = 36
-        image_size_h = 12 
+        image_size = 12
         ratio_cls_loss, ratio_bbox_loss, ratio_landmark_loss = 1.0, 0.5, 0.5
     elif net == 'rnet':
-        image_size_w = 72
-        image_size_h = 24 
+        image_size = 24
         ratio_cls_loss, ratio_bbox_loss, ratio_landmark_loss = 1.0, 0.5, 1.0
     elif net == 'onet':
+        image_size = 48
         ratio_cls_loss, ratio_bbox_loss, ratio_landmark_loss = 1.0, 0.5, 1.0
-        image_size_w = 144
-        image_size_h = 48
     else:
         raise Exception("incorrect net type.")
     #define placeholder
-    input_image = tf.placeholder(tf.float32, shape=[config.BATCH_SIZE, image_size_h, image_size_w, 3], name='input_image')
+    input_image = tf.placeholder(tf.float32, shape=[config.BATCH_SIZE, image_size, image_size, 3], name='input_image')
     label = tf.placeholder(tf.float32, shape=[config.BATCH_SIZE], name='label')
     bbox_target = tf.placeholder(tf.float32, shape=[config.BATCH_SIZE, 4], name='bbox_target')
     landmark_target = tf.placeholder(tf.float32,shape=[config.BATCH_SIZE,8],name='landmark_target')

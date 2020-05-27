@@ -130,6 +130,7 @@ dmypy.json
 
 # tmp data
 tmp/
+tmp_36x12/
 
 # dataset
 dataset/

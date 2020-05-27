@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import cv2
 
 def IoU(box, boxes):
     """Compute IoU between detect box and gt boxes
@@ -30,6 +31,68 @@ def IoU(box, boxes):
     inter = w * h
     ovr = inter * 1.0 / (box_area + area - inter)
     return ovr
+
+def squared_im(img, size):
+    """Padding rectangle plate images to square images
+
+    Parameters:
+    -----------
+    img: tuple, shape(height, width, channel)
+        input image
+    size: int
+        size of resized images
+            pnet: 12
+            rnet: 24
+            onet: 48
+    -----------
+
+    Returns:
+    -----------
+    squared img: numpy array, shape(size, size, 3)
+    """
+    h, w, c = img.shape
+    print("h %d w %d c %d" %(h,w,c))
+    if w >= h:
+        scale = size / float(w)
+        resized_w = size
+        resized_h = int(h * scale)
+    else:
+        scale = size / float(h)
+        resized_h = size
+        resized_w = int(w * scale)
+    resized_im = cv2.resize(img, (resized_w, resized_h), interpolation=cv2.INTER_LINEAR)
+    top = (size - resized_h)//2
+    bottom = size - top - resized_h
+    left = (size - resized_w)//2
+    right = size - left - resized_w
+    print("w", resized_w, "h",resized_h,"top %d bottom %d left %d right %d" %(top, bottom, left, right))
+    resized_im = cv2.copyMakeBorder(resized_im,top,bottom,left,right,cv2.BORDER_CONSTANT,value=0)
+    return resized_im
+
+def enlarge_det(bbox):
+    """Enlarge the detected bounding box
+
+    Parameters:
+    ----------
+    bbox: numpy array, shape n x 5
+        input bbox
+    ----------
+
+    Returns:
+    ----------
+    enlarged_bbox: numpy array
+    """
+    enlarged_bbox = bbox.copy()
+
+    h = bbox[:, 3] - bbox[:, 1] + 1
+    w = bbox[:, 2] - bbox[:, 0] + 1
+
+    enlarged_bbox[:, 0] = bbox[:, 0] - w*0.1
+    enlarged_bbox[:, 1] = bbox[:, 1] - h*0.1
+    enlarged_bbox[:, 2] = bbox[:, 2] + w*0.1
+    enlarged_bbox[:, 3] = bbox[:, 3] + h*0.1
+
+    return enlarged_bbox
 
 def convert_to_square(bbox):
     """Convert bbox to square
