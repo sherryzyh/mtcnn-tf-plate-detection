@@ -31,6 +31,35 @@ def IoU(box, boxes):
     ovr = inter * 1.0 / (box_area + area - inter)
     return ovr
 
+def enlarge_det(bbox):
+    """Enlarge the detected bounding box
+    Parameters:
+    ----------
+    bbox: numpy array, shape n x 5
+        input bbox
+    ----------
+    Returns:
+    ----------
+    enlarged_bbox: numpy array
+    """
+    enlarged_bbox = bbox.copy()
+
+    h = bbox[:, 3] - bbox[:, 1] + 1
+    w = bbox[:, 2] - bbox[:, 0] + 1
+    for i in range(bbox.shape[0]):
+        if (w[i] > h[i] * 3):
+            enlarged_bbox[i, 0] = bbox[i, 0] - w[i] * 0.1
+            enlarged_bbox[i, 1] = bbox[i, 1] + h[i] * 0.5 - w[i] * 0.4
+            enlarged_bbox[i, 2] = bbox[i, 2] + w[i] * 0.1
+            enlarged_bbox[i, 3] = bbox[i, 3] - h[i] * 0.5 + w[i] * 0.4
+        else:
+            enlarged_bbox[i, 0] = bbox[i, 0] + w[i] * 0.5 - h[i] * 1.8  
+            enlarged_bbox[i, 1] = bbox[i, 1] - h[i] * 0.1
+            enlarged_bbox[i, 2] = bbox[i, 2] - w[i] * 0.5 + h[i] * 1.8
+            enlarged_bbox[i, 3] = bbox[i, 3] + h[i] * 0.1
+    
+    return enlarged_bbox
+
 def convert_to_square(bbox):
     """Convert bbox to square
 

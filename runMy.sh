@@ -34,11 +34,10 @@ python -u training/train_plate.py --stage=pnet
 # 3. stage: R-Net
 ### generate training data(Face Detection Part) for RNet
 echo "Preparing R-Net training data: bbox"
-python -u prepare_data/gen_hard_bbox_rnet_onet.py --stage=rnet
-'''
+python -u prepare_data/gen_hard_bbox_rnet_onet.py --stage=rnet --mydata=True --lmnum=4
 ### generate training data(Face Landmark Detection Part) for RNet
 echo "Preparing R-Net training data: landmark"
-python -u prepare_data/gen_landmark_aug.py --stage=rnet
+python -u prepare_data/gen_landmark_aug.py --stage=rnet --mydata=True --lmnum=4
 ### generate tfrecord file for tf training
 echo "Preparing R-Net tfrecord file"
 python -u prepare_data/gen_tfrecords.py --stage=rnet
@@ -63,4 +62,3 @@ python -u training/train.py --stage=onet
 # 5. Done
 echo "Congratulation! All stages had been done. Now you can going to testing and hope you enjoy your result."
 echo "haha...bye bye"
-'''
