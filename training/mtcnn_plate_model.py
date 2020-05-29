@@ -173,7 +173,7 @@ def R_Net(inputs,label=None, bbox_target=None, landmark_target=None, training=Tr
         #batch*4
         bbox_pred = slim.fully_connected(fc1,num_outputs=4,scope="bbox_fc",activation_fn=None)
         #batch*10
-        landmark_pred = slim.fully_connected(fc1,num_outputs=10,scope="landmark_fc",activation_fn=None)
+        landmark_pred = slim.fully_connected(fc1,num_outputs=8,scope="landmark_fc",activation_fn=None)
         #train
         if training:
             cls_loss = cls_ohem(cls_prob,label)
@@ -206,7 +206,7 @@ def O_Net(inputs,label=None,bbox_target=None,landmark_target=None,training=True)
         #batch*4
         bbox_pred = slim.fully_connected(fc1,num_outputs=4,scope="bbox_fc",activation_fn=None)
         #batch*10
-        landmark_pred = slim.fully_connected(fc1,num_outputs=10,scope="landmark_fc",activation_fn=None)
+        landmark_pred = slim.fully_connected(fc1,num_outputs=8,scope="landmark_fc",activation_fn=None)
         #train
         if training:
             cls_loss = cls_ohem(cls_prob,label)

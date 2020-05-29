@@ -40,7 +40,7 @@ echo "Preparing R-Net training data: landmark"
 python -u prepare_data/gen_landmark_aug.py --stage=rnet --mydata=True --lmnum=4
 ### generate tfrecord file for tf training
 echo "Preparing R-Net tfrecord file"
-python -u prepare_data/gen_tfrecords.py --stage=rnet
+python -u prepare_data/gen_tfrecords.py --stage=rnet --lmnum=4
 ### start to training R-Net
 echo "Start to training R-Net"
 python -u training/train.py --stage=rnet
