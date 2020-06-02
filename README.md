@@ -1,6 +1,7 @@
 ## Description
 [MTCNN](https://kpzhang93.github.io/MTCNN_face_detection_alignment/): Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Networks    
-Implement training and testing by tensorflow. 
+Implement training and testing by tensorflow.
+Referenced [mtcnn_tf](https://github.com/BobLiu20/mtcnn_tf)
 
 ## Dependencies
 * Tensorflow v1.0.0 or higher
