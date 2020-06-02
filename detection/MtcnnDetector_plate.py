@@ -303,15 +303,15 @@ class MtcnnDetector_plate(object):
             boxes after calibration
         """
         h, w, c = im.shape
-        dets = self.convert_to_square(dets)
+        dets = self.enlarge_det(dets)
         dets[:, 0:4] = np.round(dets[:, 0:4])
         [dy, edy, dx, edx, y, ey, x, ex, tmpw, tmph] = self.pad(dets, w, h)
         num_boxes = dets.shape[0]
-        cropped_ims = np.zeros((num_boxes, 48, 48, 3), dtype=np.float32)
+        cropped_ims = np.zeros((num_boxes, 144, 48, 3), dtype=np.float32)
         for i in range(num_boxes):
             tmp = np.zeros((tmph[i], tmpw[i], 3), dtype=np.uint8)
             tmp[dy[i]:edy[i] + 1, dx[i]:edx[i] + 1, :] = im[y[i]:ey[i] + 1, x[i]:ex[i] + 1, :]
-            cropped_ims[i, :, :, :] = (cv2.resize(tmp, (48, 48))-127.5) / 128
+            cropped_ims[i, :, :, :] = (cv2.resize(tmp, (48, 144))-127.5) / 128
         cls_scores, reg,landmark = self.onet_detector.predict(cropped_ims)
         #prob belongs to face
         cls_scores = cls_scores[:,1]        
@@ -328,8 +328,8 @@ class MtcnnDetector_plate(object):
         w = boxes[:,2] - boxes[:,0] + 1
         #height
         h = boxes[:,3] - boxes[:,1] + 1
-        landmark[:,0::2] = (np.tile(w,(5,1)) * landmark[:,0::2].T + np.tile(boxes[:,0],(5,1)) - 1).T
-        landmark[:,1::2] = (np.tile(h,(5,1)) * landmark[:,1::2].T + np.tile(boxes[:,1],(5,1)) - 1).T        
+        landmark[:,0::2] = (np.tile(w,(4,1)) * landmark[:,0::2].T + np.tile(boxes[:,0],(4,1)) - 1).T
+        landmark[:,1::2] = (np.tile(h,(4,1)) * landmark[:,1::2].T + np.tile(boxes[:,1],(4,1)) - 1).T        
         boxes_c = self.calibrate_box(boxes, reg)
         boxes = boxes[py_nms(boxes, 0.6, "Minimum")]
         keep = py_nms(boxes_c, 0.6, "Minimum")

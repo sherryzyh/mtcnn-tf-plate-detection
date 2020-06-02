@@ -15,6 +15,7 @@ Implement training and testing by tensorflow.
 3. Run `./clearAll.sh` to clear all tmp file.
 4. Run `./runAll.sh` to finish all (include preparing data and training). Please check this shell script to get more info.
 
+
 ## Prepare Plate Data and Train
 
 1. Prepare your own plate dataset, make sure images named by CCPD rules. Put image files in `./dataset/traindata` folder.
@@ -24,6 +25,14 @@ Implement training and testing by tensorflow.
 1. Copy your image file to `testing/images`
 2. Run `python testing/test_images.py --stage=onet`. Anyway you can specify stage to pnet or rnet to check your model.
 3. The result will output in `testing/results_onet`
+
+## Testing and Predict Plate Data
+1. Copy your image file to `testing/plates`
+2. Run `python testing/test_plates.py --stage=onet`. Anyway you can specify stage to pnet or rnet to check your model.
+3. The result will output in `testing/results_onet`
+
+
+
 
 ## Results
 
