@@ -24,6 +24,35 @@ class MtcnnDetector_plate(object):
         self.thresh = threshold
         self.scale_factor = scale_factor
 
+    def enlarge_det(self, bbox):
+        """Enlarge the detected bounding box
+        Parameters:
+        ----------
+        bbox: numpy array, shape n x 5
+            input bbox
+        ----------
+        Returns:
+        ----------
+        enlarged_bbox: numpy array
+        """
+        enlarged_bbox = bbox.copy()
+
+        h = bbox[:, 3] - bbox[:, 1] + 1
+        w = bbox[:, 2] - bbox[:, 0] + 1
+        for i in range(bbox.shape[0]):
+            if (w[i] > h[i] * 3):
+                enlarged_bbox[i, 0] = bbox[i, 0] - w[i] * 0.1
+                enlarged_bbox[i, 1] = bbox[i, 1] + h[i] * 0.5 - w[i] * 0.4
+                enlarged_bbox[i, 2] = bbox[i, 2] + w[i] * 0.1
+                enlarged_bbox[i, 3] = bbox[i, 3] - h[i] * 0.5 + w[i] * 0.4
+            else:
+                enlarged_bbox[i, 0] = bbox[i, 0] + w[i] * 0.5 - h[i] * 1.8  
+                enlarged_bbox[i, 1] = bbox[i, 1] - h[i] * 0.1
+                enlarged_bbox[i, 2] = bbox[i, 2] - w[i] * 0.5 + h[i] * 1.8
+                enlarged_bbox[i, 3] = bbox[i, 3] + h[i] * 0.1
+        
+        return enlarged_bbox
+
     def convert_to_square(self, bbox):
         """
             convert bbox to square
@@ -216,7 +245,7 @@ class MtcnnDetector_plate(object):
         return boxes, boxes_c, None
 
     def detect_rnet(self, im, dets):
-        """Get face candidates using rnet
+        """Get plate candidates using rnet
         Parameters:
         ----------
         im: numpy array
@@ -231,19 +260,19 @@ class MtcnnDetector_plate(object):
             boxes after calibration
         """
         h, w, c = im.shape
-        dets = self.convert_to_square(dets)
+        dets = self.enlarge_det(dets)
         dets[:, 0:4] = np.round(dets[:, 0:4])
 
         [dy, edy, dx, edx, y, ey, x, ex, tmpw, tmph] = self.pad(dets, w, h)
         num_boxes = dets.shape[0]
-        cropped_ims = np.zeros((num_boxes, 24, 24, 3), dtype=np.float32)
+        cropped_ims = np.zeros((num_boxes, 72, 24, 3), dtype=np.float32)
         for i in range(num_boxes):
             tmp = np.zeros((tmph[i], tmpw[i], 3), dtype=np.uint8)
             tmp[dy[i]:edy[i] + 1, dx[i]:edx[i] + 1, :] = im[y[i]:ey[i] + 1, x[i]:ex[i] + 1, :]
-            cropped_ims[i, :, :, :] = (cv2.resize(tmp, (24, 24))-127.5) / 128
+            cropped_ims[i, :, :, :] = (cv2.resize(tmp, (24, 72))-127.5) / 128
         #cls_scores : num_data*2
         #reg: num_data*4
-        #landmark: num_data*10
+        #landmark: num_data*8
         cls_scores, reg, _ = self.rnet_detector.predict(cropped_ims)
         cls_scores = cls_scores[:,1]
         keep_inds = np.where(cls_scores > self.thresh[1])[0]

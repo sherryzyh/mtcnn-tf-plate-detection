@@ -172,7 +172,7 @@ def R_Net(inputs,label=None, bbox_target=None, landmark_target=None, training=Tr
         cls_prob = slim.fully_connected(fc1,num_outputs=2,scope="cls_fc",activation_fn=tf.nn.softmax)
         #batch*4
         bbox_pred = slim.fully_connected(fc1,num_outputs=4,scope="bbox_fc",activation_fn=None)
-        #batch*10
+        #batch*8
         landmark_pred = slim.fully_connected(fc1,num_outputs=8,scope="landmark_fc",activation_fn=None)
         #train
         if training:

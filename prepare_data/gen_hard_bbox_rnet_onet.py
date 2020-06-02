@@ -12,7 +12,7 @@ from tools.common_utils import IoU, convert_to_square, enlarge_det
 from training.mtcnn_plate_model import P_Net, R_Net
 from training.mtcnn_config import config
 from tools.loader import TestLoader
-from detection.detector import Detector
+from detection.detector_plate import Detector
 from detection.fcn_detector import FcnDetector
 from detection.MtcnnDetector import MtcnnDetector
 from detection.MtcnnDetector_plate import MtcnnDetector_plate
