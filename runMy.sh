@@ -54,7 +54,7 @@ echo "Preparing O-Net training data: landmark"
 python -u prepare_data/gen_landmark_aug.py --stage=onet --mydata=True --lmnum=4
 ### generate tfrecord file for tf training
 echo "Preparing O-Net tfrecord file"
-python -u prepare_data/gen_tfrecords.py --stage=onet
+python -u prepare_data/gen_tfrecords.py --stage=onet --lmnum=4
 ### start to training O-Net
 echo "Start to training O-Net"
 python -u training/train_plate.py --stage=onet

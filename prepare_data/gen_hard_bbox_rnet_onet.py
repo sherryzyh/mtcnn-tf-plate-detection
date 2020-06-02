@@ -308,7 +308,7 @@ def parse_args():
     parser.add_argument('--stage', dest='stage', help='working stage, can be rnet, onet',
                         default='unknow', type=str)
     parser.add_argument('--gpus', dest='gpus', help='specify gpu to run. eg: --gpus=0,1',
-                        default='0', type=str)
+                        default='0 ', type=str)
     parser.add_argument('--mydata',dest='mydata',help='data type(default training data or my data)',
                         default=False, type=bool)
     parser.add_argument('--lmnum',dest='lmnum',help='number of landmarks in one bounding box',
