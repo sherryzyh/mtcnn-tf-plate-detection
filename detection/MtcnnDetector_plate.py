@@ -14,7 +14,7 @@ class MtcnnDetector_plate(object):
                  detectors,
                  min_size=24,
                  stride=2,
-                 threshold=[0.6, 0.7, 0.7],
+                 threshold=[0.6, 0.8, 0.7],
                  scale_factor=0.79):
         self.pnet_detector = detectors[0]
         self.rnet_detector = detectors[1]
@@ -114,7 +114,7 @@ class MtcnnDetector_plate(object):
                 detect threshold
         Returns:
         -------
-            bbox array
+            bbox array 
         """
         cellsize = 12
         t_index = np.where(cls_map > threshold)
@@ -161,7 +161,7 @@ class MtcnnDetector_plate(object):
                 end point of the bbox in target image
             y, x : numpy array, n x 1
                 start point of the bbox in original image
-            ex, ex : numpy array, n x 1
+            ex, ey : numpy array, n x 1
                 end point of the bbox in original image
             tmph, tmpw: numpy array, n x 1
                 height and width of the bbox
@@ -188,7 +188,7 @@ class MtcnnDetector_plate(object):
         return return_list
     
     def detect_pnet(self, im):
-        """Get face candidates through pnet
+        """Get plate candidates through pnet
         Parameters:
         ----------
         im: numpy array
@@ -201,7 +201,7 @@ class MtcnnDetector_plate(object):
             boxes after calibration
         """
         h, w, c = im.shape
-        print("image: height %d width %d channels %d\n" %(h,w,c))
+        print("image: height %d width %d channels %d" %(h,w,c))
         net_size = 36
         
         current_scale = float(net_size) / self.min_size  # find initial scale
@@ -229,12 +229,17 @@ class MtcnnDetector_plate(object):
         if len(all_boxes) == 0:
             return None, None, None
         all_boxes = np.vstack(all_boxes)
+        #print("all_boxes\n",all_boxes)
         # merge the detection from first stage
         keep = py_nms(all_boxes[:, 0:5], 0.7, 'Union')
         all_boxes = all_boxes[keep]
         boxes = all_boxes[:, :5]
         bbw = all_boxes[:, 2] - all_boxes[:, 0] + 1
         bbh = all_boxes[:, 3] - all_boxes[:, 1] + 1
+        #print("boxes\n",boxes)
+        #print("boxes 5 - \n",all_boxes[5:])
+        #print("bbw\n",bbw)
+        #print("bbh\n",bbh)
         # refine the boxes
         boxes_c = np.vstack([all_boxes[:, 0] + all_boxes[:, 5] * bbw,
                              all_boxes[:, 1] + all_boxes[:, 6] * bbh,
@@ -242,6 +247,7 @@ class MtcnnDetector_plate(object):
                              all_boxes[:, 3] + all_boxes[:, 8] * bbh,
                              all_boxes[:, 4]])
         boxes_c = boxes_c.T
+        #print("boxes_c\n",boxes_c)
         return boxes, boxes_c, None
 
     def detect_rnet(self, im, dets):
@@ -265,11 +271,11 @@ class MtcnnDetector_plate(object):
 
         [dy, edy, dx, edx, y, ey, x, ex, tmpw, tmph] = self.pad(dets, w, h)
         num_boxes = dets.shape[0]
-        cropped_ims = np.zeros((num_boxes, 72, 24, 3), dtype=np.float32)
+        cropped_ims = np.zeros((num_boxes, 24, 72, 3), dtype=np.float32)
         for i in range(num_boxes):
             tmp = np.zeros((tmph[i], tmpw[i], 3), dtype=np.uint8)
             tmp[dy[i]:edy[i] + 1, dx[i]:edx[i] + 1, :] = im[y[i]:ey[i] + 1, x[i]:ex[i] + 1, :]
-            cropped_ims[i, :, :, :] = (cv2.resize(tmp, (24, 72))-127.5) / 128
+            cropped_ims[i, :, :, :] = (cv2.resize(tmp, (72, 24)) - 127.5) / 128
         #cls_scores : num_data*2
         #reg: num_data*4
         #landmark: num_data*8
@@ -280,15 +286,16 @@ class MtcnnDetector_plate(object):
             boxes = dets[keep_inds]
             boxes[:, 4] = cls_scores[keep_inds]
             reg = reg[keep_inds]
+            cls_scores = cls_scores[keep_inds]
         else:
-            return None, None, None
+            return None, None, None, None
         keep = py_nms(boxes, 0.6)
         boxes = boxes[keep]
         boxes_c = self.calibrate_box(boxes, reg[keep])
-        return boxes, boxes_c, None
-
+        return boxes, boxes_c, cls_scores, None
+    
     def detect_onet(self, im, dets):
-        """Get face candidates using onet
+        """Get plate candidates using onet
         Parameters:
         ----------
         im: numpy array
@@ -307,23 +314,24 @@ class MtcnnDetector_plate(object):
         dets[:, 0:4] = np.round(dets[:, 0:4])
         [dy, edy, dx, edx, y, ey, x, ex, tmpw, tmph] = self.pad(dets, w, h)
         num_boxes = dets.shape[0]
-        cropped_ims = np.zeros((num_boxes, 144, 48, 3), dtype=np.float32)
+        cropped_ims = np.zeros((num_boxes, 48, 144, 3), dtype=np.float32)
         for i in range(num_boxes):
             tmp = np.zeros((tmph[i], tmpw[i], 3), dtype=np.uint8)
             tmp[dy[i]:edy[i] + 1, dx[i]:edx[i] + 1, :] = im[y[i]:ey[i] + 1, x[i]:ex[i] + 1, :]
-            cropped_ims[i, :, :, :] = (cv2.resize(tmp, (48, 144))-127.5) / 128
+            cropped_ims[i, :, :, :] = (cv2.resize(tmp, (144, 48))-127.5) / 128
         cls_scores, reg,landmark = self.onet_detector.predict(cropped_ims)
-        #prob belongs to face
+        #prob belongs to plate
         cls_scores = cls_scores[:,1]        
-        keep_inds = np.where(cls_scores > self.thresh[2])[0]        
+        keep_inds = np.where(cls_scores > self.thresh[2])[0]
         if len(keep_inds) > 0:
             #pickout filtered box
             boxes = dets[keep_inds]
             boxes[:, 4] = cls_scores[keep_inds]
             reg = reg[keep_inds]
             landmark = landmark[keep_inds]
+            cls_scores = cls_scores[keep_inds]
         else:
-            return None, None, None
+            return None, None, -1, None
         #width
         w = boxes[:,2] - boxes[:,0] + 1
         #height
@@ -335,7 +343,7 @@ class MtcnnDetector_plate(object):
         keep = py_nms(boxes_c, 0.6, "Minimum")
         boxes_c = boxes_c[keep]
         landmark = landmark[keep]
-        return boxes, boxes_c,landmark
+        return boxes, boxes_c, cls_scores, landmark
 
     def detect_plate(self, test_data):
         all_boxes = []  #save each image's bboxes
@@ -343,15 +351,17 @@ class MtcnnDetector_plate(object):
         batch_idx = 0
         for databatch in test_data:
             # print info
-            printStr = "\rDone images: {}\n".format(batch_idx)
+            printStr = "\n\rDetecting image: {}\n".format(batch_idx)
             sys.stdout.write(printStr)
             sys.stdout.flush()
             batch_idx += 1
             im = databatch
+            # Here changed!
             # pnet
             if self.pnet_detector:
                 #ignore landmark 
                 boxes, boxes_c, landmark = self.detect_pnet(im)
+                print("pnet detecting done!")
                 if boxes_c is None:
                     all_boxes.append(np.array([]))
                     landmarks.append(np.array([]))
@@ -359,18 +369,24 @@ class MtcnnDetector_plate(object):
             # rnet
             if self.rnet_detector:
                 #ignore landmark                 
-                boxes, boxes_c, landmark = self.detect_rnet(im, boxes_c)
+                boxes, boxes_c, cls_scores, landmark = self.detect_rnet(im, boxes_c)
+                print("rnet detecting done!")
                 if boxes_c is None:
                     all_boxes.append(np.array([]))
                     landmarks.append(np.array([]))
                     continue
             # onet
             if self.onet_detector:
-                boxes, boxes_c, landmark = self.detect_onet(im, boxes_c)
+                print("here in onet detecting ...")
+                print("boxes_c num after rnet:\n",boxes_c.shape[0])
+                boxes, boxes_c, cls_scores, landmark = self.detect_onet(im, boxes_c)
+                print("onet detecting done!")
+                print("boxes_c num:\n",np.shape(boxes_c))
+                print("cls scores:\n",cls_scores)
                 if boxes_c is None:
                     all_boxes.append(np.array([]))
                     landmarks.append(np.array([]))                    
                     continue
             all_boxes.append(boxes_c)
             landmarks.append(landmark)
-        return all_boxes,landmarks
+        return all_boxes,landmarks 

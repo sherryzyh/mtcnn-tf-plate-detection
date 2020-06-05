@@ -130,7 +130,7 @@ def P_Net(inputs, label=None, bbox_target=None, landmark_target=None, training=T
         #batch*H*W*4
         bbox_pred = slim.conv2d(net, num_outputs=4, kernel_size=[1, 13], stride=1, scope='conv4_2', activation_fn=None)
         #bbox_pred = slim.conv2d(net, num_outputs=4, kernel_size=[1,1], stride=1, scope='conv4_2', activation_fn=None)
-        #batch*H*W*10
+        #batch*H*W*8
         landmark_pred = slim.conv2d(net, num_outputs=8, kernel_size=[1, 13], stride=1, scope='conv4_3', activation_fn=None)
         #landmark_pred = slim.conv2d(net, num_outputs=8, kernel_size=[1,1], stride=1, scope='conv4_3', activation_fn=None)
         if training:
@@ -140,7 +140,7 @@ def P_Net(inputs, label=None, bbox_target=None, landmark_target=None, training=T
             #batch
             bbox_pred = tf.squeeze(bbox_pred, [1, 2], name='bbox_pred')
             bbox_loss = bbox_ohem(bbox_pred, bbox_target, label)
-            #batch*10
+            #batch*8
             landmark_pred = tf.squeeze(landmark_pred, [1, 2], name="landmark_pred")
             landmark_loss = landmark_ohem(landmark_pred, landmark_target, label)
 
@@ -205,7 +205,7 @@ def O_Net(inputs,label=None,bbox_target=None,landmark_target=None,training=True)
         cls_prob = slim.fully_connected(fc1,num_outputs=2,scope="cls_fc",activation_fn=tf.nn.softmax)
         #batch*4
         bbox_pred = slim.fully_connected(fc1,num_outputs=4,scope="bbox_fc",activation_fn=None)
-        #batch*10
+        #batch*8
         landmark_pred = slim.fully_connected(fc1,num_outputs=8,scope="landmark_fc",activation_fn=None)
         #train
         if training:
