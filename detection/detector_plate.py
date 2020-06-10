@@ -7,7 +7,7 @@ class Detector(object):
     def __init__(self, net_factory, data_size, batch_size, model_path):
         graph = tf.Graph()
         with graph.as_default():
-            self.image_op = tf.placeholder(tf.float32, shape=[batch_size, data_size * 3, data_size, 3], name='input_image')
+            self.image_op = tf.placeholder(tf.float32, shape=[batch_size, data_size, data_size * 3, 3], name='input_image')
             #figure out landmark            
             self.cls_prob, self.bbox_pred, self.landmark_pred = net_factory(self.image_op, training=False)
             self.sess = tf.Session(

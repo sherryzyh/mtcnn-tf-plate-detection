@@ -40,11 +40,21 @@ def test(stage, testFolder):
     mtcnnDetector = MtcnnDetector_plate(detectors=detectors, min_size = 24, threshold=[0.9, 0.6, 0.7])
 
     testImages = []
+    print("testFolder",testFolder)
+    print("testImages",testImages)
     for name in os.listdir(testFolder):
         testImages.append(os.path.join(testFolder, name))
-    testDatas = TestLoader(testImages)
+    #print("testImages",testImages)
+    print("testImages shape",np.shape(testImages))
+    testData = TestLoader(testImages)
+    print("batch_size",testData.batch_size)
+    print("size",testData.size)
+
     # Now to detect
-    allBoxes, allLandmarks = mtcnnDetector.detect_plate(testDatas)
+    allBoxes, allLandmarks = mtcnnDetector.detect_plate(testData)
+    print("DETECT DONE!\n")
+    print("allBoxes\n",allBoxes[:5])
+    print("allLandmarks\n",allLandmarks[:5])
     print("\n")
     # Save it
     for idx, imagePath in enumerate(testImages):
