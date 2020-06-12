@@ -289,6 +289,7 @@ def test_net_plate(batch_size, stage, thresh, min_size, stride):
     mtcnn_detector = MtcnnDetector_plate(detectors=detectors, min_size=min_size,
                                    stride=stride, threshold=thresh)
     test_data = TestLoader(data['images'])
+    print("shape of test data:",np.shape(test_data))
     # do detect
     detections, _ = mtcnn_detector.detect_plate(test_data)
     # save detect result
