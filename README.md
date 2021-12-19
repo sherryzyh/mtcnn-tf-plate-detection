@@ -1,4 +1,7 @@
-[中文说明文档](./README_CN.md)
+[中文说明文档](./README_CN.md) Chinese version instruction for plate detection
+
+---
+Original English instruction for face detection
 
 ## Description
 
